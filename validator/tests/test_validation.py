@@ -1266,7 +1266,6 @@ class TestValidation(TestCase):
         run_tcol_id = run_tcol.id
 
         # ========= validations with filters
-
         run_filt = generate_default_validation()
         run_filt.user = self.testuser
         run_filt.interval_from = time_intervals_from
@@ -1288,7 +1287,6 @@ class TestValidation(TestCase):
                 config.filters.add(DataFilter.objects.get(name='FIL_ISMN_GOOD'))
             if config.dataset.short_name == globals.C3S:
                 config.filters.add(DataFilter.objects.get(name='FIL_C3S_FLAG_0'))
-            print('old one', config.dataset == globals.ISMN, config, config.filters.all())
 
         pfilter = ParametrisedFilter(filter=DataFilter.objects.get(name='FIL_ISMN_NETWORKS'), parameters='SCAN', \
                                      dataset_config=run_filt.reference_configuration)
@@ -1316,14 +1314,15 @@ class TestValidation(TestCase):
                 run.anomalies_to = time_intervals_to
             run.scaling_method = scaling_methods[i]
             run.save()
+            
             is_there_one = _compare_validation_runs(run, published_runs, user)
-
             assert is_there_one['is_there_validation']
             assert is_there_one['val_id'] == run_ids[i]
             run.delete()
 
         # runs to fail:
         run = generate_default_validation()
+
         run.user = self.testuser
         run.interval_from = time_intervals_from
         run.interval_to = time_intervals_to
@@ -1337,7 +1336,7 @@ class TestValidation(TestCase):
         run.anomalies = anomalies_methods[0][0]
         run.scaling_method = scaling_methods[0]
         run.save()
-
+        
         is_there_one = _compare_validation_runs(run, published_runs, user)
         assert not is_there_one['is_there_validation']
 
@@ -1348,6 +1347,7 @@ class TestValidation(TestCase):
         run.max_lon = self.hawaii_coordinates[3]
 
         run.save()
+
         is_there_one = _compare_validation_runs(run, published_runs, user)
         assert is_there_one['is_there_validation']
         assert is_there_one['val_id'] == run_ids[0]
@@ -1356,18 +1356,22 @@ class TestValidation(TestCase):
         run.interval_from = datetime(1990, 1, 1, tzinfo=UTC)
         run.save()
         is_there_one = _compare_validation_runs(run, published_runs, user)
+
         assert not is_there_one['is_there_validation']
 
         run.interval_from = time_intervals_from
         run.interval_to = datetime(2000, 1, 1, tzinfo=UTC)
         run.save()
+
         is_there_one = _compare_validation_runs(run, published_runs, user)
         assert not is_there_one['is_there_validation']
 
         # time span restored
         run.interval_to = time_intervals_to
         run.save()
+
         is_there_one = _compare_validation_runs(run, published_runs, user)
+
         assert is_there_one['is_there_validation']
         assert is_there_one['val_id'] == run_ids[0]
 
@@ -1375,6 +1379,7 @@ class TestValidation(TestCase):
         # scaling method at the same time):
         run.anomalies = anomalies_methods[1][0]
         run.save()
+
         is_there_one = _compare_validation_runs(run, published_runs, user)
         assert not is_there_one['is_there_validation']
 
@@ -1382,6 +1387,7 @@ class TestValidation(TestCase):
         # there is no run with scaling method LINREG
         run.scaling_method = ValidationRun.LINREG
         run.save()
+
         is_there_one = _compare_validation_runs(run, published_runs, user)
         assert not is_there_one['is_there_validation']
 
@@ -1391,6 +1397,7 @@ class TestValidation(TestCase):
         run.anomalies_from = time_intervals_from
         run.anomalies_to = time_intervals_to
         run.save()
+
         is_there_one = _compare_validation_runs(run, published_runs, user)
         assert is_there_one['is_there_validation']
         assert is_there_one['val_id'] == run_ids[2]
@@ -1398,12 +1405,14 @@ class TestValidation(TestCase):
         # messing up with anomalies time interval:
         run.anomalies_from = datetime(1990, 1, 1, tzinfo=UTC)
         run.save()
+
         is_there_one = _compare_validation_runs(run, published_runs, user)
         assert not is_there_one['is_there_validation']
 
         run.anomalies_from = time_intervals_from
         run.anomalies_to = datetime(1990, 1, 1, tzinfo=UTC)
         run.save()
+
         is_there_one = _compare_validation_runs(run, published_runs, user)
         assert not is_there_one['is_there_validation']
 
@@ -1419,6 +1428,7 @@ class TestValidation(TestCase):
         run.anomalies_from = None
         run.anomalies_to = None
         run.save()
+
         is_there_one = _compare_validation_runs(run, published_runs, user)
         assert is_there_one['is_there_validation']
 
@@ -1441,25 +1451,27 @@ class TestValidation(TestCase):
         new_pfilter.save()
         is_there_one = _compare_validation_runs(run, published_runs, user)
 
+
         assert is_there_one['is_there_validation']
         assert is_there_one['val_id'] == run_filt_id
 
-        # messing up with filters:
 
+        # messing up with filters:
         # adding filter for C3S
         c3s_filter = DataFilter.objects.get(name='FIL_C3S_MODE_ASC')
         for new_config in run.dataset_configurations.all():
             if new_config.dataset.short_name == globals.C3S:
                 new_config.filters.add(c3s_filter)
                 new_config.save()
+                
         is_there_one = _compare_validation_runs(run, published_runs, user)
-
         assert not is_there_one['is_there_validation']
 
         # getting back to the right settings
         for new_config in run.dataset_configurations.all():
             if new_config.dataset.short_name == globals.C3S:
                 new_config.filters.remove(c3s_filter)
+
         is_there_one = _compare_validation_runs(run, published_runs, user)
         assert is_there_one['is_there_validation']
 
@@ -1477,6 +1489,7 @@ class TestValidation(TestCase):
             if new_config.dataset.short_name == globals.ISMN:
                 new_config.filters.add(ismn_filter)
             new_config.save()
+
         is_there_one = _compare_validation_runs(run, published_runs, user)
         assert is_there_one['is_there_validation']
 
@@ -1562,8 +1575,8 @@ class TestValidation(TestCase):
         run_tcol.anomalies = anomalies_methods[0][0]
         run_tcol.scaling_method = scaling_methods[0]
         run_tcol.save()
-        is_there_one = _compare_validation_runs(run_tcol, published_runs, user)
 
+        is_there_one = _compare_validation_runs(run_tcol, published_runs, user)
         assert is_there_one['is_there_validation']
         assert is_there_one['val_id'] == run_tcol_id
 
@@ -1665,5 +1678,4 @@ class TestValidation(TestCase):
         user_to_remove.delete()
         copied_runs = CopiedValidations.objects.all()
         assert len(copied_runs) == 0
-
 

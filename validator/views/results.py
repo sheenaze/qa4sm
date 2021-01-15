@@ -124,6 +124,7 @@ def user_runs(request):
         .order_by(order)
     )
 
+
     paginator = Paginator(cur_user_runs, 10)
     try:
         paginated_runs = paginator.page(page)
@@ -143,7 +144,6 @@ def user_runs(request):
 def result(request, result_uuid):
     val_run = get_object_or_404(ValidationRun, pk=result_uuid)
     current_user = request.user
-
     copied_runs = current_user.copiedvalidations_set.all() if current_user.username else []
     is_copied = val_run.id in copied_runs.values_list('copied_run', flat=True)
 
@@ -177,6 +177,7 @@ def result(request, result_uuid):
                 response = HttpResponse("Validation added to your list", status=200)
             else:
                 response = HttpResponse("You have already added this validation to your list", status=200)
+
         elif 'remove_validation' in post_params and post_params['remove_validation'] == 'true':
             user.copied_runs.remove(val_run)
             response = HttpResponse("Validation has been removed from your list", status=200)

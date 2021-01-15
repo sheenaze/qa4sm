@@ -33,6 +33,6 @@ def published_results(request):
         'copied_runs': copied_runs,
         'validations': paginated_runs,
         'sorting_form': sorting_form,
-    }
+        }
 
     return render(request, 'validator/published_results.html', context)

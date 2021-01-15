@@ -145,8 +145,9 @@ def _check_scaling_method(new_run, old_run):
                 return False
     return True
 
-
+  
 def _compare_validation_runs(new_run, runs_set, user):
+
     """
     Compares two validation runs. It takes a new_run and checks the query given by runs_set according to parameters
     given in the vr_fileds. If all fields agree it checks datasets configurations.
@@ -300,6 +301,7 @@ def validation(request):
                 val_id = comparison['val_id']
                 val_date = ValidationRun.objects.get(id=val_id).start_time
                 belongs_to_user = comparison['belongs_to_user']
+                
                 return render(request, 'validator/validate.html',
                               {'val_form': val_form, 'dc_formset': dc_formset, 'ref_dc_form': ref_dc_form,
                                'maintenance_mode': Settings.load().maintenance_mode, 'if_run_exists': if_run_exists,
@@ -315,6 +317,7 @@ def validation(request):
             p.start()
 
             return redirect('result', result_uuid=run_id)
+          
         else:
             __logger.error("Errors in validation form {}\n{}\n{}".format(val_form.errors, dc_formset.errors, ref_dc_form.errors))
     else:
