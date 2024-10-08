@@ -38,11 +38,6 @@ from validator.models import DatasetVersion
 from validator.models import ParametrisedFilter
 from validator.models import ValidationRun
 from validator.models import CopiedValidations
-# from validator.tests.auxiliary_functions import (
-#     generate_ismn_upscaling_validation,
-#     generate_default_validation,
-#     generate_default_validation_triple_coll,
-# )
 from validator.tests.testutils import set_dataset_paths
 from validator.validation import globals, adapt_timestamp
 import validator.validation as val
@@ -102,7 +97,9 @@ class TestValidation(TestCase):
                 username=self.user2_data['username'])
         except User.DoesNotExist:
             self.testuser = User.objects.create_user(**self.user_data)
+            self.testuser.save()
             self.testuser2 = User.objects.create_user(**self.user2_data)
+            self.testuser2.save()
 
         try:
             os.makedirs(val.OUTPUT_FOLDER)
@@ -2614,6 +2611,8 @@ class TestValidation(TestCase):
     #NOTE: does not run with temporal subwindows
     def test_copy_validation(self):
         for val_run, val_run_params in self.validation_runs.items():
+            print(val_run)
+            print(len(ValidationRun.objects.all()))
             self.__logger.debug(f"Running test '{get_function_name()}'  for {val_run}")
 
             _run, val_params_tbe_dict = val_run_params
@@ -2666,8 +2665,9 @@ class TestValidation(TestCase):
             assert comparison['val_id'] is None
             assert not comparison['belongs_to_user']
             assert not comparison['is_published']
-
+            # print('Here is sth wrong', self.testuser2.pk, self.testuser.pk, new_run.pk)
             copied_run_info = copy_validationrun(new_run, self.testuser2)
+            # print('Because I can not get here')
             assert copied_run_info['run_id'] != run.id
 
             validations = ValidationRun.objects.exclude(
@@ -2691,7 +2691,9 @@ class TestValidation(TestCase):
 
             # copying again, so to check CopiedValidations model
             new_run = get_object_or_404(ValidationRun, pk=run_id)
+            # print('Or actually maybe here')
             copy_validationrun(new_run, self.testuser2)
+            # print('and if i get here i have no idea what is happpening')
 
             # checking if saving to CopiedValidations model is correct (should be 2, because the first validation was
             # returned the same, and only the second and the third one were copied:
