@@ -1,14 +1,14 @@
-import {Component, EventEmitter, Input, OnInit, Output, signal} from '@angular/core';
-import {ValidationrunDto} from '../../../core/services/validation-run/validationrun.dto';
-import {fas} from '@fortawesome/free-solid-svg-icons';
-import {HttpParams} from '@angular/common/http';
-import {Router} from '@angular/router';
-import {ValidationrunService} from '../../../core/services/validation-run/validationrun.service';
-import {AuthService} from '../../../core/services/auth/auth.service';
-import {Observable, Observer} from 'rxjs';
-import {GlobalParamsService} from '../../../core/services/global/global-params.service';
-import {ToastService} from '../../../core/services/toast/toast.service';
-import {CustomHttpError} from '../../../core/services/global/http-error.service';
+import { Component, EventEmitter, Input, OnInit, Output, signal } from '@angular/core';
+import { ValidationrunDto } from '../../../core/services/validation-run/validationrun.dto';
+import { fas } from '@fortawesome/free-solid-svg-icons';
+import { HttpParams } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { ValidationrunService } from '../../../core/services/validation-run/validationrun.service';
+import { AuthService } from '../../../core/services/auth/auth.service';
+import { Observable, Observer } from 'rxjs';
+import { GlobalParamsService } from '../../../core/services/global/global-params.service';
+import { ToastService } from '../../../core/services/toast/toast.service';
+import { CustomHttpError } from '../../../core/services/global/http-error.service';
 
 @Component({
   selector: 'qa-buttons',
@@ -57,13 +57,13 @@ export class ButtonsComponent implements OnInit {
   // OBSERVERS
 
   deleteObserver = {
-    next: () => this.onDeleteNext(),
+    next: () => this.onDeleteoOrStopValNext(),
     error: (error: CustomHttpError) => this.toastService.showErrorWithHeader(error.errorMessage.header, error.errorMessage.message),
     complete: () => this.toastService.showSuccess('Validation successfully removed.')
   }
 
   stopValidationObserver = {
-    next: (validationId: string) => this.validationService.refreshComponent(validationId),
+    next: (validationId: string) => this.onDeleteoOrStopValNext(),
     error: (error: CustomHttpError) => this.toastService.showErrorWithHeader(error.errorMessage.header, error.errorMessage.message),
   }
 
@@ -94,7 +94,7 @@ export class ButtonsComponent implements OnInit {
   }
 
   // next, errors, complete functions
-  onDeleteNext(): void {
+  onDeleteoOrStopValNext(): void {
     this.validationService.refreshComponent('page');
     this.doUpdate.emit({key: 'delete', value: true});
   }
@@ -137,6 +137,8 @@ export class ButtonsComponent implements OnInit {
     if (!confirm('Do you really want to stop the validation?')) {
       return;
     }
+    // please note that this one HAS to be subscribed, because there is a delete method behind.
+    // there is nothing to be returned, but without subscribing, frontend will not now that there was a response.
     this.validationService.stopValidation(validationId).subscribe(this.stopValidationObserver);
   }
 
